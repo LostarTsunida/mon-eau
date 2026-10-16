@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Mon eau</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mon eau">
+<meta name="theme-color" content="#0c1022">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{
+  --bg:#0c1022;--card:#161b33;--card-edge:#232a4d;--cell:#2a3156;
+  --fg:#e9ecff;--muted:#8b92bd;--water:#2bc7e8;--water-glow:rgba(43,199,232,.45);--ring:#fff;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Rounded","SF Pro Text",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg)}
+body{color:var(--fg);font-family:var(--font);-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;overscroll-behavior:none}
+.app{max-width:520px;margin:0 auto;
+  padding-top:calc(env(safe-area-inset-top,0px) + 16px);
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px);
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+header{display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--card-edge);display:grid;place-items:center}
+h1{font-size:26px;font-weight:700;margin:0;letter-spacing:-.01em}
+.sub{font-size:13px;color:var(--muted);margin:2px 0 0;text-transform:capitalize}
+.habit{background:var(--card);border:1px solid var(--card-edge);border-radius:18px;padding:14px 14px 16px;display:flex;flex-direction:column;gap:12px}
+.head{display:flex;align-items:center;gap:10px}
+.ico{width:28px;height:28px;border-radius:8px;background:rgba(43,199,232,.15);display:grid;place-items:center;flex:none}
+h2{font-size:15px;font-weight:600;margin:0;flex:1;min-width:0}
+.stats{display:flex;gap:10px;font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stats b{color:var(--fg);font-weight:500}
+.check{width:32px;height:32px;border-radius:9px;border:0;background:var(--cell);color:var(--muted);display:grid;place-items:center;flex:none;transition:background .2s,transform .1s}
+.check.on{background:var(--water);color:#06202a;box-shadow:0 0 14px var(--water-glow)}
+.check:active,.big:active{transform:scale(.95)}
+.months{display:grid;font-size:10px;color:var(--muted);font-family:var(--mono);height:12px}
+.months span{white-space:nowrap}
+.grid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:3px}
+.cell{aspect-ratio:1;max-width:100%;border-radius:50%;background:var(--cell);border:0;padding:0;transition:background .25s,box-shadow .25s}
+.cell.on{background:var(--water);box-shadow:0 0 6px var(--water-glow)}
+.cell.future{background:transparent}
+.cell.today{outline:1.5px solid var(--ring);outline-offset:1px}
+.big{border-radius:16px;padding:18px;font:600 16px var(--font);background:var(--card);color:var(--fg);border:1px solid var(--card-edge);transition:background .2s,color .2s,transform .1s}
+.big.on{background:var(--water);color:#06202a;border-color:transparent;box-shadow:0 6px 24px var(--water-glow)}
+.hint{font-size:12px;color:var(--muted);text-align:center;margin:0}
+button{cursor:pointer;font-family:inherit}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 2.5C9 7 5.5 10.6 5.5 14.5a6.5 6.5 0 0 0 13 0C18.5 10.6 15 7 12 2.5Z" fill="#2bc7e8"/></svg></div>
+    <div><h1>Habitudes</h1><p class="sub" id="dateLabel"></p></div>
+  </header>
+  <section class="habit">
+    <div class="head">
+      <div class="ico"><svg width="15" height="15" viewBox="0 0 24 24"><path d="M12 2.5C9 7 5.5 10.6 5.5 14.5a6.5 6.5 0 0 0 13 0C18.5 10.6 15 7 12 2.5Z" fill="#2bc7e8"/></svg></div>
+      <h2>Boire assez d'eau</h2>
+      <div class="stats"><span>🔥 <b id="streak">0</b></span><span><b id="total">0</b>j</span></div>
+      <button class="check" id="check" aria-label="Valider aujourd'hui"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+    </div>
+    <div class="months" id="months"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+  <button class="big" id="big"></button>
+  <p class="hint">Touche un rond pour corriger un jour passé.</p>
+</div>
+<script>
+(function(){
+  const MOIS=["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
+  const LS="mon-eau-days";
+  let days={};
+  try{days=JSON.parse(localStorage.getItem(LS)||"{}")||{}}catch(e){}
+  const pad=n=>String(n).padStart(2,"0");
+  const key=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+  let today,todayKey;
+  const grid=document.getElementById("grid"),months=document.getElementById("months");
+
+  function refreshToday(){
+    today=new Date();today.setHours(0,0,0,0);todayKey=key(today);
+    document.getElementById("dateLabel").textContent=today.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+  }
+  function render(){
+    const W=Math.max(12,Math.min(30,Math.floor(((grid.clientWidth||340)+3)/14)));
+    const dow=(today.getDay()+6)%7;
+    const start=new Date(today);start.setDate(today.getDate()-dow-(W-1)*7);
+    grid.style.gridTemplateColumns=months.style.gridTemplateColumns=`repeat(${W},1fr)`;
+    grid.innerHTML="";months.innerHTML="";
+    let last=-1;
+    for(let c=0;c<W;c++){
+      const col=new Date(start);col.setDate(start.getDate()+c*7);
+      const s=document.createElement("span");
+      if(col.getMonth()!==last&&c<W-1){s.textContent=MOIS[col.getMonth()];last=col.getMonth();}
+      months.appendChild(s);
+      for(let r=0;r<7;r++){
+        const d=new Date(col);d.setDate(col.getDate()+r);
+        const k=key(d),b=document.createElement("button");
+        b.className="cell";
+        if(d>today){b.classList.add("future");b.disabled=true;}
+        else{
+          if(days[k])b.classList.add("on");
+          if(k===todayKey)b.classList.add("today");
+          b.setAttribute("aria-label",d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"}));
+          b.onclick=()=>toggle(k);
+        }
+        grid.appendChild(b);
+      }
+    }
+    let streak=0;const d=new Date(today);
+    if(!days[todayKey])d.setDate(d.getDate()-1);
+    while(days[key(d)]){streak++;d.setDate(d.getDate()-1);}
+    document.getElementById("streak").textContent=streak;
+    document.getElementById("total").textContent=Object.keys(days).length;
+    const on=!!days[todayKey];
+    document.getElementById("check").classList.toggle("on",on);
+    const big=document.getElementById("big");
+    big.classList.toggle("on",on);
+    big.textContent=on?"✓ J'ai bu assez d'eau aujourd'hui":"J'ai bu assez d'eau aujourd'hui ?";
+  }
+  function toggle(k){
+    if(days[k])delete days[k];else days[k]=true;
+    try{localStorage.setItem(LS,JSON.stringify(days))}catch(e){}
+    if(navigator.vibrate)navigator.vibrate(10);
+    render();
+  }
+  document.getElementById("check").onclick=()=>toggle(todayKey);
+  document.getElementById("big").onclick=()=>toggle(todayKey);
+  let t;addEventListener("resize",()=>{clearTimeout(t);t=setTimeout(render,120)});
+  // quand on rouvre l'appli le lendemain, la date se met à jour
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){refreshToday();render();}});
+  refreshToday();render();
+  if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+})();
+</script>
+</body>
+</html>
